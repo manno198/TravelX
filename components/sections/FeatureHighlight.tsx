@@ -35,16 +35,7 @@ export function FeatureHighlight() {
 
   return (
     <section className="py-20 relative bg-[#FDFCFB]">
-      {/* Wavy Lines Background - contained within section only */}
-      <div className="absolute inset-0 z-0">
-        <Threads 
-          color={[0, 3, 0]} // Black lines
-          amplitude={1}
-          distance={2}
-          enableMouseInteraction={false}
-          className="w-full h-full"
-        />
-      </div>
+      
 
       {/* Content positioned in front of wavy lines */}
       <div className="container mx-auto px-4 relative z-10">

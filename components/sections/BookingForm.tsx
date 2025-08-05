@@ -109,16 +109,7 @@ export function BookingForm() {
 
   return (
     <section className="py-20 bg-[#FDFCFB] relative">
-      {/* Wavy Lines Background - contained within section only */}
-      <div className="absolute inset-0 z-0">
-        <Threads 
-          color={[0, 6, 1]} // Black lines
-          amplitude={1}
-          distance={2}
-          enableMouseInteraction={false}
-          className="w-full h-full"
-        />
-      </div>
+    
 
       {/* Content positioned in front of wavy lines */}
       <div className="container mx-auto px-4 relative z-10">
