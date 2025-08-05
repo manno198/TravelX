@@ -6,12 +6,12 @@ import { Testimonials } from "@/components/sections/Testimonials"
 
 export default function HomePage() {
   return (
-    <>
+    <div className="relative min-h-screen bg-white">
       <HeroSection />
       <ServiceCards />
       <BookingForm />
       <FeatureHighlight />
       <Testimonials />
-    </>
+    </div>
   )
 }

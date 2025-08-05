@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
 import { NotificationProvider } from "@/contexts/NotificationContext"
 import { NotificationDisplay } from "@/components/ui/notification-display"
+import { CursorProvider } from "@/components/ui/cursor-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -31,6 +32,7 @@ export default function RootLayout({
               <main>{children}</main>
               <Footer />
               <NotificationDisplay />
+              <CursorProvider />
             </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>

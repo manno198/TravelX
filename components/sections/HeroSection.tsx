@@ -5,6 +5,7 @@ import { ArrowRight, Play, Zap, Shield, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
+import Threads from "@/components/ui/Threads"
 
 export function HeroSection() {
   const features = [
@@ -15,7 +16,18 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#FDFCFB]">
-      {/* Hero Content */}
+      {/* Wavy Lines Background - extended to cover feature cards */}
+      <div className="absolute inset-0 z-0" style={{ height: '120%', bottom: '-20%' }}>
+        <Threads 
+          color={[0, 3, 0]} // Black lines
+          amplitude={1}
+          distance={2}
+          enableMouseInteraction={false}
+          className="w-full h-full"
+        />
+      </div>
+
+      {/* Hero Content - positioned in front of wavy lines */}
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Main Hero Card */}
@@ -25,7 +37,7 @@ export function HeroSection() {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <Card className="p-12 mb-8 bg-white border border-gray-200 shadow-lg">
+            <Card className="p-12 mb-8 bg-white border border-gray-200 shadow-lg relative z-20">
               <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
                 <h1 className="text-4xl md:text-6xl lg:text-7xl mb-4 font-bold text-[#333333]">
                   Revolutionary Transport
@@ -76,7 +88,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-20"
           >
             {features.map((feature, index) => (
               <motion.div

@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { MapPin, Calendar, Clock, Users, CreditCard, CheckCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,21 +14,34 @@ import { useTransportTypes } from "@/hooks/useTransportTypes"
 import { useBookings } from "@/hooks/useBookings"
 import { useAuth } from "@/contexts/AuthContext"
 import { useNotification } from "@/contexts/NotificationContext"
+import Threads from "@/components/ui/Threads"
 
 export function BookingForm() {
+  const searchParams = useSearchParams()
   const { user } = useAuth()
   const { transportTypes, loading } = useTransportTypes()
   const { createBooking } = useBookings()
   const { showNotification } = useNotification()
+
+  // Pre-fill transportType from query param if present
+  const transportParam = searchParams.get("transport")
 
   const [formData, setFormData] = useState({
     pickup: "",
     dropoff: "",
     date: "",
     time: "",
-    transportType: "",
+    transportType: transportParam || "",
     passengers: 1,
   })
+
+  useEffect(() => {
+    // If the param changes (e.g. via navigation), update the form
+    if (transportParam && transportParam !== formData.transportType) {
+      setFormData((prev) => ({ ...prev, transportType: transportParam }))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transportParam])
 
   const [estimatedPrice, setEstimatedPrice] = useState(0)
   const [submitLoading, setSubmitLoading] = useState(false)
@@ -37,8 +50,6 @@ export function BookingForm() {
   const calculatePrice = (transportTypeId: string) => {
     const transport = transportTypes.find((t) => t.id === transportTypeId)
     if (!transport) return 0
-
-    // Simple distance calculation (in real app, use Google Maps API)
     const estimatedDistance = Math.random() * 20 + 5 // 5-25 km
     return transport.base_price + transport.price_per_km * estimatedDistance
   }
@@ -50,19 +61,14 @@ export function BookingForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-
-    
     if (!user) {
       showNotification("error", "Authentication Required", "Please sign in to book a ride.")
       return
     }
-
     if (!formData.transportType) {
       showNotification("warning", "Transport Type Required", "Please select a transport type.")
       return
     }
-
     setSubmitLoading(true)
     try {
       const bookingData = {
@@ -73,16 +79,13 @@ export function BookingForm() {
         booking_time: new Date(`${formData.date}T${formData.time}`).toISOString(),
         distance_km: Math.random() * 20 + 5,
       }
-
       const { data, error } = await createBooking(bookingData)
-      
       if (!error) {
         showNotification(
           "success",
           "Booking Confirmed!",
           `Your ride from ${formData.pickup} to ${formData.dropoff} has been successfully booked.`
         )
-
         setFormData({
           pickup: "",
           dropoff: "",
@@ -93,26 +96,32 @@ export function BookingForm() {
         })
         setEstimatedPrice(0)
         setBookingSuccess(true)
-
         setTimeout(() => setBookingSuccess(false), 3000)
       } else {
-        console.error("Booking creation failed:", error)
         showNotification("error", "Booking Failed", `There was an error creating your booking: ${(error as any)?.message || 'Unknown error'}`)
       }
     } catch (error) {
-      console.error("Booking error:", error)
       showNotification("error", "Booking Error", `An unexpected error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSubmitLoading(false)
     }
   }
 
-  // Debug: Log transport types
-  
-
   return (
-    <section className="py-20 bg-[#FDFCFB]">
-      <div className="container mx-auto px-4">
+    <section className="py-20 bg-[#FDFCFB] relative">
+      {/* Wavy Lines Background - contained within section only */}
+      <div className="absolute inset-0 z-0">
+        <Threads 
+          color={[0, 6, 1]} // Black lines
+          amplitude={1}
+          distance={2}
+          enableMouseInteraction={false}
+          className="w-full h-full"
+        />
+      </div>
+
+      {/* Content positioned in front of wavy lines */}
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -124,8 +133,7 @@ export function BookingForm() {
             Quick and easy booking process with real-time price calculation
           </p>
         </motion.div>
-
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto relative z-20">
           <Card className="p-8 bg-white border border-gray-200 shadow-lg">
             {bookingSuccess ? (
               <motion.div
@@ -166,7 +174,6 @@ export function BookingForm() {
                       className="border-gray-300 focus:border-[#FF6B00] focus:ring-[#FF6B00] text-[#333333] placeholder:text-[#999999]"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="dropoff" className="text-[#333333] font-medium">
                       <MapPin className="inline w-4 h-4 mr-2" />
@@ -183,7 +190,6 @@ export function BookingForm() {
                     />
                   </div>
                 </div>
-
                 {/* Date and Time */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -200,7 +206,6 @@ export function BookingForm() {
                       className="border-gray-300 focus:border-[#FF6B00] focus:ring-[#FF6B00] text-[#333333]"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="time" className="text-[#333333] font-medium">
                       <Clock className="inline w-4 h-4 mr-2" />
@@ -216,7 +221,6 @@ export function BookingForm() {
                     />
                   </div>
                 </div>
-
                 {/* Transport Type and Passengers */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -262,7 +266,6 @@ export function BookingForm() {
                       Available types: {transportTypes.length} | Loading: {loading.toString()}
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="passengers" className="text-[#333333] font-medium">
                       <Users className="inline w-4 h-4 mr-2" />
@@ -279,7 +282,6 @@ export function BookingForm() {
                     />
                   </div>
                 </div>
-
                 {/* Price Estimate */}
                 {estimatedPrice > 0 && (
                   <motion.div
@@ -298,7 +300,6 @@ export function BookingForm() {
                     </div>
                   </motion.div>
                 )}
-
                 {/* Submit Button */}
                 <div className="flex items-center justify-center pt-6">
                   <Button
@@ -319,7 +320,6 @@ export function BookingForm() {
                     )}
                   </Button>
                 </div>
-
                 {!user && (
                   <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-yellow-800">

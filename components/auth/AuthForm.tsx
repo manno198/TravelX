@@ -8,9 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
+import { useNotification } from "@/contexts/NotificationContext"
+import { useRouter } from "next/navigation"
 
 export function AuthForm() {
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, loginDemo } = useAuth()
+  const { showNotification } = useNotification()
+  const router = useRouter()
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -20,18 +24,72 @@ export function AuthForm() {
     fullName: "",
   })
 
+  // Helper to check if we're in demo mode
+  const isDemoMode = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    return !supabaseUrl || !supabaseAnonKey || 
+           !supabaseUrl.includes('supabase.co') || 
+           supabaseAnonKey.length <= 100
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
       if (isSignUp) {
-        await signUp(formData.email, formData.password, formData.fullName)
+        const { data, error } = await signUp(formData.email, formData.password, formData.fullName)
+        
+        if (error) {
+          showNotification("error", "Sign Up Failed", error.message || "Failed to create account")
+        } else {
+          if (isDemoMode()) {
+            showNotification("success", "Account Created!", "A confirmation email would be sent in production. Redirecting to dashboard...")
+            setTimeout(() => {
+              router.push("/dashboard")
+            }, 2000)
+          } else {
+            // Real Supabase sign up - check if email confirmation is required
+            if (data?.user && !data?.session) {
+              showNotification("success", "Account Created!", "Please check your email for a confirmation link to complete your registration.")
+            } else if (data?.session) {
+              showNotification("success", "Account Created!", "Welcome to TransportX! Redirecting to dashboard...")
+              setTimeout(() => {
+                router.push("/dashboard")
+              }, 2000)
+            }
+          }
+        }
       } else {
-        await signIn(formData.email, formData.password)
+        const { data, error } = await signIn(formData.email, formData.password)
+        
+        if (error) {
+          showNotification("error", "Sign In Failed", error.message || "Invalid credentials")
+        } else {
+          showNotification("success", "Welcome Back!", "Successfully signed in. Redirecting...")
+          setTimeout(() => {
+            router.push("/dashboard")
+          }, 1500)
+        }
       }
     } catch (error) {
       console.error("Auth error:", error)
+      showNotification("error", "Authentication Error", "An unexpected error occurred")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fix Demo Account button to actually log in and redirect
+  const handleDemoAccount = async () => {
+    setLoading(true)
+    try {
+      loginDemo()
+      showNotification("success", "Demo Mode", "You are now exploring as a demo user!")
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 1000)
     } finally {
       setLoading(false)
     }
@@ -158,14 +216,8 @@ export function AuthForm() {
                 <Button
                   variant="outline"
                   className="w-full border-gray-300 text-[#666666] hover:bg-[#FF6B00]/5 hover:text-[#FF6B00]"
-                  onClick={() => {
-                    // Demo sign in
-                    setFormData({
-                      email: "demo@transportx.com",
-                      password: "demo123",
-                      fullName: "Demo User",
-                    })
-                  }}
+                  onClick={handleDemoAccount}
+                  disabled={loading}
                 >
                   <Mail className="w-4 h-4 mr-2" />
                   Demo Account

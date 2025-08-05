@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, User, LogOut, Settings, Wallet } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
@@ -11,6 +12,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const { user, profile, signOut } = useAuth()
+  const router = useRouter()
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -18,6 +20,12 @@ export function Header() {
     { href: "/dashboard", label: "Dashboard" },
     { href: "/about", label: "About" },
   ]
+
+  // Helper to close profile dropdown and optionally navigate
+  const handleProfileOption = (action: () => void) => {
+    setIsProfileOpen(false)
+    action()
+  }
 
   return (
     <motion.header
@@ -83,15 +91,18 @@ export function Header() {
                         </div>
                       </div>
                       <div className="p-2">
-                        <Link
-                          href="/dashboard"
-                          className="flex items-center px-3 py-2 text-[#666666] hover:text-[#FF6B00] hover:bg-[#FF6B00]/5 rounded transition-colors"
+                        <button
+                          onClick={() => handleProfileOption(() => router.push("/dashboard"))}
+                          className="flex items-center w-full px-3 py-2 text-[#666666] hover:text-[#FF6B00] hover:bg-[#FF6B00]/5 rounded transition-colors"
                         >
                           <Settings size={16} className="mr-2" />
                           Dashboard
-                        </Link>
+                        </button>
                         <button
-                          onClick={signOut}
+                          onClick={() => handleProfileOption(async () => {
+                            await signOut()
+                            router.push("/auth/signin")
+                          })}
                           className="flex items-center w-full px-3 py-2 text-[#666666] hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                         >
                           <LogOut size={16} className="mr-2" />

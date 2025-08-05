@@ -4,11 +4,15 @@ import { motion } from "framer-motion"
 import { Car, Bus, Users, Package, Crown, Bike } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
+import Threads from "@/components/ui/Threads"
 
 export function ServiceCards() {
+  const router = useRouter()
   const services = [
     {
       icon: Car,
+      id: "1",
       title: "Private Car",
       description: "Comfortable private rides for personal transportation",
       price: "From $5.00",
@@ -17,6 +21,7 @@ export function ServiceCards() {
     },
     {
       icon: Bus,
+      id: "2",
       title: "Bus Service",
       description: "Affordable shared transportation for daily commutes",
       price: "From $2.00",
@@ -25,6 +30,7 @@ export function ServiceCards() {
     },
     {
       icon: Users,
+      id: "3",
       title: "Shared Ride",
       description: "Split costs with other passengers going your way",
       price: "From $3.00",
@@ -33,6 +39,7 @@ export function ServiceCards() {
     },
     {
       icon: Package,
+      id: "4",
       title: "Delivery",
       description: "Fast and secure package delivery service",
       price: "From $4.00",
@@ -41,6 +48,7 @@ export function ServiceCards() {
     },
     {
       icon: Crown,
+      id: "5",
       title: "Premium",
       description: "Luxury vehicles for special occasions",
       price: "From $10.00",
@@ -49,6 +57,7 @@ export function ServiceCards() {
     },
     {
       icon: Bike,
+      id: "6",
       title: "Motorcycle",
       description: "Quick rides through traffic on two wheels",
       price: "From $3.00",
@@ -57,9 +66,25 @@ export function ServiceCards() {
     },
   ]
 
+  const handleBookNow = (serviceId: string) => {
+    router.push(`/booking?transport=${serviceId}`)
+  }
+
   return (
     <section className="py-20 relative bg-[#FDFCFB]">
-      <div className="container mx-auto px-4">
+      {/* Wavy Lines Background - contained within section only */}
+      <div className="absolute inset-0 z-0">
+        <Threads 
+          color={[0, 5, 0]} // Black lines
+          amplitude={1}
+          distance={2}
+          enableMouseInteraction={false}
+          className="w-full h-full"
+        />
+      </div>
+
+      {/* Content positioned in front of wavy lines */}
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -72,7 +97,7 @@ export function ServiceCards() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-20">
           {services.map((service, index) => (
             <motion.div
               key={index}
@@ -108,7 +133,8 @@ export function ServiceCards() {
                     ))}
                   </div>
 
-                  <Button className="w-full bg-[#FF6B00] hover:bg-[#E55A00] text-white">
+                  <Button className="w-full bg-[#FF6B00] hover:bg-[#E55A00] text-white"
+                    onClick={() => handleBookNow(service.id)}>
                     Book Now
                   </Button>
                 </CardContent>
