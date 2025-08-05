@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { HeroSection } from "@/components/sections/HeroSection"
 import { ServiceCards } from "@/components/sections/ServiceCards"
 import { BookingForm } from "@/components/sections/BookingForm"
@@ -9,7 +10,9 @@ export default function HomePage() {
     <div className="relative min-h-screen bg-white">
       <HeroSection />
       <ServiceCards />
-      <BookingForm />
+      <Suspense fallback={<div className="py-20 text-center">Loading booking form...</div>}>
+        <BookingForm />
+      </Suspense>
       <FeatureHighlight />
       <Testimonials />
     </div>
